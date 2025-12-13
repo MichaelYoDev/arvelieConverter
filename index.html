@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arvelie Calendar Converter</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; }
+        h1 { text-align: center; }
+        label { display: block; margin-top: 20px; font-weight: bold; }
+        input[type="text"], input[type="date"] { width: 100%; padding: 10px; font-size: 16px; margin-top: 10px; }
+        button { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
+        #result { margin-top: 30px; font-size: 18px; text-align: center; font-weight: bold; }
+        .note { font-size: 0.9em; color: #555; margin-top: 40px; }
+    </style>
+</head>
+<body>
+    <h1>Arvelie ↔ Gregorian Converter</h1>
+
+    <label for="gregorian">Gregorian Date (YYYY-MM-DD):</label>
+    <input type="date" id="gregorian">
+
+    <label for="arvelie">Arvelie Date (e.g., 25Y10, 2025Y10, 25+00):</label>
+    <input type="text" id="arvelie" placeholder="e.g., 25Y10 or 25+01">
+
+    <button onclick="convertBoth()">Convert Both Ways</button>
+
+    <div id="result"></div>
+
+    <div class="note">
+        <p><strong>Notes:</strong></p>
+        <ul>
+            <li>Year in Arvelie is typically 2 digits (e.g., 25 for 2025), but 4 digits are accepted.</li>
+            <li>Regular days: YYLDD where L = A–Z (A=first month), DD=00–13.</li>
+            <li>Year Day (Dec 31 non-leap): +00</li>
+            <li>Leap Day (Dec 31 leap year): +01</li>
+            <li>Examples: 02A00 → 2008-01-01, 01D06 → 2007-02-18, 14+01 → 2020-12-31</li>
+            <li>Current date (2025-12-13) → 25Y10</li>
+        </ul>
+    </div>
+
+    <script>
+        function isLeapYear(year) {
+            return year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+        }
+
+        function gregorianToArvelie(dateStr) {
+            const date = new Date(dateStr + 'T12:00:00'); // noon to avoid timezone issues
+            if (isNaN(date)) return "Invalid Gregorian date";
+
+            const year = date.getFullYear();
+            const doy = Math.floor((date - new Date(year, 0, 0)) / 86400000); // 1-based day of year
+
+            const yy = String(year % 100).padStart(2, '0');
+
+            // Special days
+            if (doy === 365 && !isLeapYear(year)) {
+                return `${yy}+00`; // Year Day
+            }
+            if (doy === 366 && isLeapYear(year)) {
+                return `${yy}+01`; // Leap Day
+            }
+
+            // Regular days (doy 1-364, or 1-365 in leap years)
+            let effectiveDoy = doy;
+            if (doy === 365 && isLeapYear(year)) {
+                effectiveDoy = 365; // treat as last regular day? Wait, no: in leap, 366 is +01, 365 is last regular
+            }
+
+            const dayIndex = effectiveDoy - 1; // 0-363 or 0-364
+            const monthIndex = Math.floor(dayIndex / 14); // 0-25
+            const dayInMonth = dayIndex % 14; // 0-13
+
+            const letter = String.fromCharCode('A'.charCodeAt(0) + monthIndex);
+            const dd = String(dayInMonth).padStart(2, '0');
+
+            return `${yy}${letter}${dd}`;
+        }
+
+        function arvelieToGregorian(arv) {
+            arv = arv.trim().toUpperCase().replace(/\s/g, '');
+
+            let year, doy;
+
+            if (arv.includes('+')) {
+                const parts = arv.split('+');
+                if (parts.length !== 2) return "Invalid Arvelie format";
+                const yyStr = parts[0];
+                const extra = parts[1];
+                if (!['00', '01'].includes(extra)) return "Invalid extra day";
+
+                year = yyStr.length === 2 ? 2000 + parseInt(yyStr) : parseInt(yyStr);
+                if (isNaN(year)) return "Invalid year";
+
+                const date = new Date(year, 11, 31); // Dec 31
+                if (extra === '01' && !isLeapYear(year)) {
+                    return "Leap Day (+01) only in leap years";
+                }
+                return date.toISOString().slice(0, 10);
+            }
+
+            // Regular format: digits + letter + 2 digits
+            const regex = /^(\d{2,4})([A-Z])(\d{2})$/;
+            const match = arv.match(regex);
+            if (!match) return "Invalid Arvelie format";
+
+            const yyStr = match[1];
+            const letter = match[2];
+            const ddStr = match[3];
+
+            year = yyStr.length === 2 ? 2000 + parseInt(yyStr) : parseInt(yyStr);
+            if (isNaN(year)) return "Invalid year";
+
+            const monthIndex = letter.charCodeAt(0) - 'A'.charCodeAt(0);
+            if (monthIndex < 0 || monthIndex > 25) return "Invalid month letter";
+
+            const dayInMonth = parseInt(ddStr);
+            if (dayInMonth < 0 || dayInMonth > 13) return "Invalid day";
+
+            doy = monthIndex * 14 + dayInMonth + 1;
+
+            if (doy > 365 && !isLeapYear(year) || doy > 366) {
+                return "Day out of range for this year";
+            }
+
+            const date = new Date(year, 0, doy); // January 0 + doy days = correct date
+            return date.toISOString().slice(0, 10);
+        }
+
+        function convertBoth() {
+            const gregInput = document.getElementById('gregorian').value;
+            const arvInput = document.getElementById('arvelie').value;
+
+            let resultText = "";
+
+            if (gregInput) {
+                const arv = gregorianToArvelie(gregInput);
+                resultText += `<strong>${gregInput}</strong> → <strong>${arv}</strong><br><br>`;
+            }
+
+            if (arvInput) {
+                const greg = arvelieToGregorian(arvInput);
+                resultText += `<strong>${arvInput.toUpperCase()}</strong> → <strong>${greg}</strong><br><br>`;
+            }
+
+            if (!gregInput && !arvInput) {
+                resultText = "Please enter at least one date.";
+            }
+
+            document.getElementById('result').innerHTML = resultText || "Results will appear here.";
+        }
+
+        // Optional: auto-convert on input change
+        document.getElementById('gregorian').addEventListener('change', convertBoth);
+        document.getElementById('arvelie').addEventListener('input', convertBoth);
+    </script>
+</body>
+</html>
