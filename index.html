@@ -81,6 +81,7 @@
 
         #result {
             margin-top: 30px;
+            line-height: 1.9em;
             padding: 20px 24px;
             background: white;
             border-radius: 16px;
@@ -239,10 +240,10 @@
             const gregInput = document.getElementById('gregorian').value;
             const arvInput = document.getElementById('arvelie').value;
             const baseYear = getBaseYear();
-            let resultText = `<strong>Base year:</strong> ${baseYear} → Arvelie 00<br><br>`;
+            let resultText = `<strong>Base year:</strong> ${baseYear} → Arvelie 00<br>`;
             if (gregInput) {
                 const arv = gregorianToArvelie(gregInput);
-                resultText += `<strong>${gregInput}</strong> → <strong>${arv}</strong><br><br>`;
+                resultText += `<strong>${gregInput}</strong> → <strong>${arv}</strong><br>`;
             }
             if (arvInput) {
                 const greg = arvelieToGregorian(arvInput);
