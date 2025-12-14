@@ -1,158 +1,267 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arvelie Calendar Converter</title>
     <style>
-        body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; }
-        h1 { text-align: center; }
-        label { display: block; margin-top: 20px; font-weight: bold; }
-        input[type="text"], input[type="date"] { width: 100%; padding: 10px; font-size: 16px; margin-top: 10px; }
-        button { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
-        #result { margin-top: 30px; font-size: 18px; text-align: center; font-weight: bold; }
-        .note { font-size: 0.9em; color: #555; margin-top: 40px; }
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            overflow-y: auto;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            background: linear-gradient(to bottom, #f5f7ff, #ffffff);
+            color: #333;
+        }
+
+        main {
+            flex: 1;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 0.1em;
+            color: #1a3b8f;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 1.4em;
+            font-weight: 400;
+            color: #666;
+            margin-bottom: 50px;
+        }
+
+        label {
+            display: block;
+            margin-top: 28px;
+            font-weight: 600;
+            color: #444;
+            font-size: 1.05em;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="number"] {
+            width: 100%;
+            padding: 16px;
+            font-size: 1em;
+            margin-top: 10px;
+            box-sizing: border-box;
+            border: 1px solid #d0d7e2;
+            border-radius: 12px;
+            background: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #4a7eff;
+            box-shadow: 0 0 0 4px rgba(74, 126, 255, 0.25), 0 4px 12px rgba(74, 126, 255, 0.15);
+            transform: translateY(-1px);
+        }
+
+        #result {
+            margin-top: 30px;
+            padding: 20px 24px;
+            background: white;
+            border-radius: 16px;
+            font-size: 1.2em;
+            text-align: center;
+            font-weight: 700;
+            color: #1a3b8f;
+            min-height: 80px;
+            border: 1px solid #e0e7ff;
+            box-shadow: 0 8px 25px rgba(74, 126, 255, 0.12);
+            background: linear-gradient(to bottom, #f8fbff, #ffffff);
+        }
+
+        .note {
+            font-size: 0.9em;
+            color: #555;
+            margin-top: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            border-left: 5px solid #4a7eff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+        }
+
+        .note strong {
+            color: #333;
+            font-size: 1em;
+        }
+
+        .note ul {
+            margin: 0;
+            padding-left: 22px;
+        }
+
+        .note li {
+            margin-bottom: 4px;
+        }
+
+        footer {
+            text-align: center;
+            color: #aaa;
+            font-size: 0.85em;
+            margin-top: 70px;
+            padding: 20px 0;
+            flex-shrink: 0;
+        }
+
+        footer a {
+            color: #aaa;
+        }
     </style>
 </head>
+
 <body>
-    <h1>Arvelie ↔ Gregorian Converter</h1>
-
-    <label for="gregorian">Gregorian Date (YYYY-MM-DD):</label>
-    <input type="date" id="gregorian">
-
-    <label for="arvelie">Arvelie Date (e.g., 25Y10, 2025Y10, 25+00):</label>
-    <input type="text" id="arvelie" placeholder="e.g., 25Y10 or 25+01">
-
-    <button onclick="convertBoth()">Convert Both Ways</button>
-
-    <div id="result"></div>
-
-    <div class="note">
-        <p><strong>Notes:</strong></p>
-        <ul>
-            <li>Year in Arvelie is typically 2 digits (e.g., 25 for 2025), but 4 digits are accepted.</li>
-            <li>Regular days: YYLDD where L = A–Z (A=first month), DD=00–13.</li>
-            <li>Year Day (Dec 31 non-leap): +00</li>
-            <li>Leap Day (Dec 31 leap year): +01</li>
-            <li>Examples: 02A00 → 2008-01-01, 01D06 → 2007-02-18, 14+01 → 2020-12-31</li>
-            <li>Current date (2025-12-13) → 25Y10</li>
-        </ul>
-    </div>
-
+    <main>
+        <h1>Arvelie ↔ Gregorian</h1>
+        <h2>Date Converter</h2>
+        <label for="baseyear">Base Gregorian Year (this year will be Arvelie 00):</label>
+        <input type="number" id="baseyear" value="2006" min="1900" max="2100" placeholder="e.g., 2006">
+        <label for="gregorian">Gregorian Date (YYYY-MM-DD):</label>
+        <input type="date" id="gregorian">
+        <label for="arvelie">Arvelie Date (e.g., 19Y10, 12+00):</label>
+        <input type="text" id="arvelie" placeholder="e.g., 19Y10 or 12+00">
+        <div id="result"></div>
+        <div class="note">
+            <p><strong>Notes:</strong></p>
+            <ul>
+                <li>Arvelie has 26 months of 14 days each.</li>
+                <li>Arvelie year is always shown as 2 digits (e.g., 06, 19).</li>
+                <li>Regular days: YYLDD (L = A–Z, DD=00–13)</li>
+                <li>Year Day (Dec 31 non-leap): YY+00 Leap Day: YY+01</li>
+                <li>Default base 2006 → 02A00 = 2008-01-01, 01D06 = 2007-02-18</li>
+            </ul>
+        </div>
+    </main>
+    <footer>This converter was made with the help of <a href="https://grok.com/">Grok</a> in about 5 minutes.</footer>
     <script>
+        function getBaseYear() {
+            const baseInput = document.getElementById('baseyear').value;
+            if (!baseInput) return 2006;
+            return parseInt(baseInput);
+        }
         function isLeapYear(year) {
             return year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
         }
-
+        function formatArvelieYear(arvelieYear) {
+            return String(arvelieYear).padStart(2, '0');
+        }
         function gregorianToArvelie(dateStr) {
-            const date = new Date(dateStr + 'T12:00:00'); // noon to avoid timezone issues
+            const baseYear = getBaseYear();
+            const date = new Date(dateStr + 'T12:00:00');
             if (isNaN(date)) return "Invalid Gregorian date";
-
-            const year = date.getFullYear();
-            const doy = Math.floor((date - new Date(year, 0, 0)) / 86400000); // 1-based day of year
-
-            const yy = String(year % 100).padStart(2, '0');
-
+            const gregYear = date.getFullYear();
+            const arvelieYear = gregYear - baseYear;
+            if (arvelieYear < 0) return "Date before base year";
+            const jan1 = new Date(gregYear, 0, 1);
+            const doy = Math.floor((date - jan1) / 86400000) + 1; // 1 to 365/366
+            const yy = formatArvelieYear(arvelieYear);
             // Special days
-            if (doy === 365 && !isLeapYear(year)) {
-                return `${yy}+00`; // Year Day
-            }
-            if (doy === 366 && isLeapYear(year)) {
+            if (doy === 366 && isLeapYear(gregYear)) {
                 return `${yy}+01`; // Leap Day
             }
-
-            // Regular days (doy 1-364, or 1-365 in leap years)
-            let effectiveDoy = doy;
-            if (doy === 365 && isLeapYear(year)) {
-                effectiveDoy = 365; // treat as last regular day? Wait, no: in leap, 366 is +01, 365 is last regular
+            if (doy === 365 && !isLeapYear(gregYear)) {
+                return `${yy}+00`; // Year Day
             }
-
-            const dayIndex = effectiveDoy - 1; // 0-363 or 0-364
-            const monthIndex = Math.floor(dayIndex / 14); // 0-25
-            const dayInMonth = dayIndex % 14; // 0-13
-
+            // Regular days
+            const dayIndex = doy - 1; // 0–364
+            const monthIndex = Math.floor(dayIndex / 14); // 0–25
+            const dayInMonth = dayIndex % 14; // 0–13
             const letter = String.fromCharCode('A'.charCodeAt(0) + monthIndex);
             const dd = String(dayInMonth).padStart(2, '0');
-
             return `${yy}${letter}${dd}`;
         }
-
         function arvelieToGregorian(arv) {
-            arv = arv.trim().toUpperCase().replace(/\s/g, '');
-
-            let year, doy;
-
+            arv = arv.trim().replace(/\s/g, '');
+            if (!arv) return "Invalid Arvelie";
+            const baseYear = getBaseYear();
+            let arvelieYearNum, gregYear, doy;
             if (arv.includes('+')) {
                 const parts = arv.split('+');
-                if (parts.length !== 2) return "Invalid Arvelie format";
-                const yyStr = parts[0];
-                const extra = parts[1];
+                if (parts.length !== 2) return "Invalid + format";
+                const yearStr = parts[0];
+                const extra = parts[1].padStart(2, '0');
                 if (!['00', '01'].includes(extra)) return "Invalid extra day";
-
-                year = yyStr.length === 2 ? 2000 + parseInt(yyStr) : parseInt(yyStr);
-                if (isNaN(year)) return "Invalid year";
-
-                const date = new Date(year, 11, 31); // Dec 31
-                if (extra === '01' && !isLeapYear(year)) {
+                if (!/^\d{2}$/.test(yearStr)) return "Year must be exactly 2 digits (e.g., 19+00)";
+                arvelieYearNum = parseInt(yearStr);
+                if (isNaN(arvelieYearNum)) return "Invalid year";
+                gregYear = baseYear + arvelieYearNum;
+                if (extra === '01' && !isLeapYear(gregYear)) {
                     return "Leap Day (+01) only in leap years";
                 }
+                const date = new Date(gregYear, 11, 31); // Dec 31
                 return date.toISOString().slice(0, 10);
             }
-
-            // Regular format: digits + letter + 2 digits
-            const regex = /^(\d{2,4})([A-Z])(\d{2})$/;
+            const regex = /^(\d{2})([A-Z])(\d{2})$/i;
             const match = arv.match(regex);
             if (!match) return "Invalid Arvelie format";
-
-            const yyStr = match[1];
-            const letter = match[2];
+            const yearStr = match[1];
+            const letter = match[2].toUpperCase();
             const ddStr = match[3];
-
-            year = yyStr.length === 2 ? 2000 + parseInt(yyStr) : parseInt(yyStr);
-            if (isNaN(year)) return "Invalid year";
-
+            arvelieYearNum = parseInt(yearStr);
+            if (isNaN(arvelieYearNum)) return "Invalid year";
+            gregYear = baseYear + arvelieYearNum;
             const monthIndex = letter.charCodeAt(0) - 'A'.charCodeAt(0);
             if (monthIndex < 0 || monthIndex > 25) return "Invalid month letter";
-
             const dayInMonth = parseInt(ddStr);
-            if (dayInMonth < 0 || dayInMonth > 13) return "Invalid day";
-
+            if (isNaN(dayInMonth) || dayInMonth < 0 || dayInMonth > 13) return "Invalid day";
             doy = monthIndex * 14 + dayInMonth + 1;
-
-            if (doy > 365 && !isLeapYear(year) || doy > 366) {
+            if (doy > 365 + (isLeapYear(gregYear) ? 1 : 0)) {
                 return "Day out of range for this year";
             }
-
-            const date = new Date(year, 0, doy); // January 0 + doy days = correct date
+            const date = new Date(gregYear, 0, doy);
             return date.toISOString().slice(0, 10);
         }
-
         function convertBoth() {
             const gregInput = document.getElementById('gregorian').value;
             const arvInput = document.getElementById('arvelie').value;
-
-            let resultText = "";
-
+            const baseYear = getBaseYear();
+            let resultText = `<strong>Base year:</strong> ${baseYear} → Arvelie 00<br><br>`;
             if (gregInput) {
                 const arv = gregorianToArvelie(gregInput);
                 resultText += `<strong>${gregInput}</strong> → <strong>${arv}</strong><br><br>`;
             }
-
             if (arvInput) {
                 const greg = arvelieToGregorian(arvInput);
-                resultText += `<strong>${arvInput.toUpperCase()}</strong> → <strong>${greg}</strong><br><br>`;
+                resultText += `<strong>${arvInput}</strong> → <strong>${greg}</strong>`;
             }
-
             if (!gregInput && !arvInput) {
-                resultText = "Please enter at least one date.";
+                resultText += "Enter a Gregorian date or Arvelie date to convert.";
             }
-
-            document.getElementById('result').innerHTML = resultText || "Results will appear here.";
+            document.getElementById('result').innerHTML = resultText;
         }
-
-        // Optional: auto-convert on input change
+        document.getElementById('baseyear').addEventListener('input', convertBoth);
         document.getElementById('gregorian').addEventListener('change', convertBoth);
         document.getElementById('arvelie').addEventListener('input', convertBoth);
+        window.onload = function () {
+            const today = new Date().toISOString().slice(0, 10);
+            document.getElementById('gregorian').value = today;
+            convertBoth();
+        };
     </script>
 </body>
+
 </html>
